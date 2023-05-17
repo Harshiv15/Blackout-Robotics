@@ -96,10 +96,6 @@ android {
         release {
             signingConfig signingConfigs.release
 
-            ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a"
-            }
-
             if (useProguard) {
                 minifyEnabled true
                 proguardFiles getDefaultProguardFile('proguard-android.txt'),
@@ -110,9 +106,6 @@ android {
         debug {
             debuggable true
             jniDebuggable true
-            ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a"
-            }
 
             if (useProguard) {
                 minifyEnabled true

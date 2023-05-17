@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.util.TriggerGamepadEx;
 public class BaseOpMode extends CommandOpMode {
     protected DcMotorEx frontLeft, frontRight, backLeft, backRight;
     protected MecanumDriveSubsystem drive;
-    protected ElevatorSubsystem elev;
-    protected IntakeSubsystem intake;
+    /*protected ElevatorSubsystem elev;
+    protected IntakeSubsystem intake;*/
 
     protected GamepadEx gamepadEx1;
     protected GamepadEx gamepadEx2;
@@ -25,7 +25,7 @@ public class BaseOpMode extends CommandOpMode {
     protected TriggerGamepadEx triggerGamepadEx1;
     protected TriggerGamepadEx triggerGamepadEx2;
 
-    protected SampleMecanumDrive rrDrive;
+    //protected SampleMecanumDrive rrDrive;
 
     @Override
     public void initialize() {
