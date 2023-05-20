@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
+import androidx.annotation.NonNull;
+
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.TriggerReader;
@@ -63,7 +65,6 @@ public class TriggerGamepadEx {
             triggerReaders.get(trigger).readValue();
         }
     }
-
 
     public boolean isDown(GamepadKeys.Trigger trigger) {
         return triggerReaders.get(trigger).isDown();

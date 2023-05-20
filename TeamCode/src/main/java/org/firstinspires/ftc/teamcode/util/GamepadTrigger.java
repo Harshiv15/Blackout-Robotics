@@ -9,7 +9,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 /**
  * A {@link Button} that gets its state from a {@link GamepadEx}.
  *
- * @author Jackson
+ * @author Harshiv
  */
 public class GamepadTrigger extends Trigger {
 

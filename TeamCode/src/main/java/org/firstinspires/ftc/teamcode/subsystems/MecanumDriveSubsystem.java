@@ -7,9 +7,8 @@ import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.RevIMU;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.trajectory.TrapezoidProfile;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.roadrunner.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.ProfiledAngleController;
 
 import java.util.function.DoubleSupplier;
@@ -33,20 +32,22 @@ public class MecanumDriveSubsystem extends SubsystemBase {
 
     public static int joystickTransformFactor = 30;
 
-    public static double slowFactor = 3.5;
+    public static double slowFactor = 14;
 
     private double target;
 
     public MecanumDriveSubsystem(MotorEx fL, MotorEx fR, MotorEx bL, MotorEx bR, RevIMU imu) {
         this.imu = imu;
-        drive = new MecanumDrive(fL, fR, bL, bR);
+        fL.setInverted(true);
+        bL.setInverted(true);
+        drive = new MecanumDrive(false, fL, fR, bL, bR);
     }
 
     public Command fieldCentric(DoubleSupplier strafeSpeed, DoubleSupplier forwardSpeed,
                                 DoubleSupplier turnSpeed, DoubleSupplier gyroAngle) {
         return new RunCommand(
-                () -> drive.driveFieldCentric(strafeSpeed.getAsDouble(), forwardSpeed.getAsDouble(),
-                        turnSpeed.getAsDouble(), gyroAngle.getAsDouble()),
+                () -> drive.driveFieldCentric(strafeSpeed.getAsDouble()/7, forwardSpeed.getAsDouble()/7,
+                        turnSpeed.getAsDouble(), gyroAngle.getAsDouble()/7),
                 this
         );
     }
@@ -55,7 +56,7 @@ public class MecanumDriveSubsystem extends SubsystemBase {
                                 DoubleSupplier turnSpeed) {
         return new RunCommand(
                 () -> drive.driveRobotCentric(strafeSpeed.getAsDouble(), forwardSpeed.getAsDouble(),
-                        turnSpeed.getAsDouble()),
+                        turnSpeed.getAsDouble(), true),
                 this
         );
     }
