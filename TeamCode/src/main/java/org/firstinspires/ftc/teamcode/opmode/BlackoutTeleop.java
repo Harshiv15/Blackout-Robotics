@@ -9,7 +9,11 @@ import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.powerplayutil.Height;
 import org.firstinspires.ftc.teamcode.util.TurnCommand;
+import org.firstinspires.ftc.teamcode.vision.util.CVMaster;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Config
 @TeleOp
@@ -20,32 +24,51 @@ public class BlackoutTeleop extends BaseOpMode{
     public void initialize() {
         super.initialize();
 
+        CVMaster cv = new CVMaster(this);
+        cv.observeStick();
+
+        /*camera.setPipeline(pipeline);
+
+        try {
+            camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+                @Override
+                public void onOpened() {
+                    camera.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
+
+
+        cv.observeStick();
+
+
         gb1(LEFT_BUMPER).whileHeld(
                 drive.slowMode(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
 
-        gb1(X).toggleWhenPressed(
+        gb1(START).toggleWhenPressed(
                 drive.fieldCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX, imu::getAbsoluteHeading),
                 drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX)
         );
 
-        gb1(DPAD_UP).whenPressed(
-                new TurnCommand(rrDrive, 0)
+        gb2(Y).whenActive(
+                new InstantCommand(()->elev.goTo(Height.LOW))
         );
-        gb1(DPAD_LEFT).whenPressed(
-                new TurnCommand(rrDrive, 90)
+        gb2(X).whenActive(
+                new InstantCommand(()->elev.goTo(Height.LOW))
         );
-        gb1(DPAD_DOWN).whenPressed(
-                new TurnCommand(rrDrive, 180)
-        );
-        gb1(DPAD_RIGHT).whenPressed(
-                new TurnCommand(rrDrive, 270)
-        );
-        gb1(RIGHT_BUMPER).whenPressed(
-                new InstantCommand(() -> ledState ++)
+        gb2(A).whenActive(
+                new InstantCommand(()->elev.goTo(Height.LOW))
         );
 
-        register(drive);
+        register(drive, elev);
         drive.setDefaultCommand(drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
+        elev.setDefaultCommand(elev.setPower(gamepadEx2::getLeftY));
     }
 
     @Override

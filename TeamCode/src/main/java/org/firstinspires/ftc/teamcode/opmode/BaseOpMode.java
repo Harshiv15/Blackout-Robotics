@@ -1,25 +1,35 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.RevIMU;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.ElevatorSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.util.GamepadTrigger;
 import org.firstinspires.ftc.teamcode.util.TriggerGamepadEx;
+import org.firstinspires.ftc.teamcode.vision.pipelines.JunctionObserverPipeline;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class BaseOpMode extends CommandOpMode {
-    protected MotorEx fL, fR, bL, bR;
+    protected MotorEx fL, fR, bL, bR, elevLeft, elevRight;
     protected MecanumDriveSubsystem drive;
     protected SampleMecanumDrive rrDrive;
+    protected JunctionObserverPipeline pipeline;
+    protected OpenCvCamera camera;
+    protected ElevatorSubsystem elev;
     /*protected ElevatorSubsystem elev;
     protected IntakeSubsystem intake;*/
 
@@ -45,14 +55,22 @@ public class BaseOpMode extends CommandOpMode {
         initHardware();
         setupHardware();
 
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        pipeline = new JunctionObserverPipeline();
+        camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName);
+        camera.setPipeline(pipeline);
+
         imu = new RevIMU(hardwareMap);
         imu.init();
 
         drive = new MecanumDriveSubsystem(fL, fR, bL, bR, imu);
         rrDrive = new SampleMecanumDrive(hardwareMap);
+        rrDrive.setPoseEstimate(new Pose2d(36, 60, Math.toRadians(-90)));
 
         triggerGamepadEx1 = new TriggerGamepadEx(gamepad1, gamepadEx1);
         triggerGamepadEx2 = new TriggerGamepadEx(gamepad2, gamepadEx2);
+
+        elev = new ElevatorSubsystem(elevLeft, elevRight);
     }
     protected void initHardware() {
         try {
@@ -60,6 +78,8 @@ public class BaseOpMode extends CommandOpMode {
             fR = new MotorEx(hardwareMap, "frontRight");
             bL = new MotorEx(hardwareMap, "backLeft");
             bR = new MotorEx(hardwareMap, "backRight");
+            elevLeft = new MotorEx(hardwareMap, "leftElevMotor");
+            elevRight = new MotorEx(hardwareMap, "rightElevMotor");
 
             red0 = hardwareMap.get(DigitalChannel.class, "red0");
             green0 = hardwareMap.get(DigitalChannel.class, "green0");
@@ -92,6 +112,10 @@ public class BaseOpMode extends CommandOpMode {
     protected void setupHardware() {
         fL.setInverted(true);
         bL.setInverted(true);
+        elevLeft.setInverted(true);
+
+        elevLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         red0.setMode(DigitalChannel.Mode.OUTPUT);
         green0.setMode(DigitalChannel.Mode.OUTPUT);
@@ -109,6 +133,9 @@ public class BaseOpMode extends CommandOpMode {
         green6.setMode(DigitalChannel.Mode.OUTPUT);
         red7.setMode(DigitalChannel.Mode.OUTPUT);
         green7.setMode(DigitalChannel.Mode.OUTPUT);
+
+        elevLeft.resetEncoder();
+        elevRight.resetEncoder();
 
         /*for(DigitalChannel[] row : indicators) {
             for(DigitalChannel led : row) {

@@ -32,7 +32,7 @@ public class MecanumDriveSubsystem extends SubsystemBase {
 
     public static int joystickTransformFactor = 30;
 
-    public static double slowFactor = 14;
+    public static double slowFactor = 3;
 
     private double target;
 
@@ -46,8 +46,8 @@ public class MecanumDriveSubsystem extends SubsystemBase {
     public Command fieldCentric(DoubleSupplier strafeSpeed, DoubleSupplier forwardSpeed,
                                 DoubleSupplier turnSpeed, DoubleSupplier gyroAngle) {
         return new RunCommand(
-                () -> drive.driveFieldCentric(strafeSpeed.getAsDouble()/7, forwardSpeed.getAsDouble()/7,
-                        turnSpeed.getAsDouble(), gyroAngle.getAsDouble()/7),
+                () -> drive.driveFieldCentric(strafeSpeed.getAsDouble(), forwardSpeed.getAsDouble(),
+                        turnSpeed.getAsDouble(), gyroAngle.getAsDouble()),
                 this
         );
     }
