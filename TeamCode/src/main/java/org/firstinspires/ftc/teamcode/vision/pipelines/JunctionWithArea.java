@@ -15,8 +15,11 @@ public class JunctionWithArea extends OpenCvPipeline {
 
     @Override
     public Mat processFrame(Mat input){
-        //blur and convert to YCrCb color space
         Imgproc.cvtColor(input, input, Imgproc.COLOR_RGB2YCrCb);
+
+        //thresholding values, may need to be further tuned
+
+        //thresholding for yellow objects
 
         Core.inRange(input, lowThresh, highThresh, input);
 

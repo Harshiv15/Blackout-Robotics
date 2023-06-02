@@ -6,10 +6,9 @@ import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.RunCommand;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
-import com.arcrobotics.ftclib.controller.wpilibcontroller.ProfiledPIDController;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.trajectory.TrapezoidProfile;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.powerplayutil.Height;
 import org.firstinspires.ftc.teamcode.util.ProfiledPIDFController;
@@ -22,15 +21,13 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private final double TICKS_IN_DEGREES = (9 * 28.0) / 360;
 
-    public static double kP = 3.7; //0.0016
-    public static double kI = 0.37; //0.06
-    public static double kD = 0.0001; //0.00018
-    public static double kF = 37; //0.06
-    public static double maxVelocity = 9;
-    public static double maxAcceleration = 50;
-    private ProfiledPIDFController leftPIDF = new ProfiledPIDFController(kP, kI, kD, kF,
-            new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration), TICKS_IN_DEGREES);
-    private ProfiledPIDFController rightPIDF = new ProfiledPIDFController(kP, kI, kD, kF,
+    public static double kP = 0; //0.0016
+    public static double kI = 0; //0.06
+    public static double kD = 0; //0.00018
+    public static double kF = 0; //0.06
+    public static double maxVelocity = 30;
+    public static double maxAcceleration = 30;
+    private ProfiledPIDFController m_PIDFController = new ProfiledPIDFController(kP, kI, kD, kF,
             new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration), TICKS_IN_DEGREES);
     public static double tolerance = 10;
 
@@ -43,21 +40,20 @@ public class ElevatorSubsystem extends SubsystemBase {
     public ElevatorSubsystem(MotorEx left, MotorEx right) {
         this.left = left;
         this.right = right;
-        leftPIDF.setTolerance(tolerance);
-        leftPIDF.setGoal(0);
-        rightPIDF.setGoal(0);
+        left.setInverted(true);
+
+        m_PIDFController.setTolerance(tolerance);
+        m_PIDFController.setGoal(0);
     }
 
     private void setHeight(Height height) {
         currentHeight = height.getHeight();
-        leftPIDF.setGoal(height.getHeight());
-        rightPIDF.setGoal(height.getHeight());
+        m_PIDFController.setGoal(height.getHeight());
     }
 
     private void setHeight(int tick) {
         currentHeight = tick;
-        leftPIDF.setGoal(tick);
-        rightPIDF.setGoal(tick);
+        m_PIDFController.setGoal(tick);
     }
 
     public int getLeftEncoderValue() {
@@ -85,28 +81,27 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public Command setPower(DoubleSupplier power) {
         return new RunCommand(() -> {
-            if(Math.abs(power.getAsDouble()) > 0.01) {
-                left.set(power.getAsDouble() / 2);
-                right.set(power.getAsDouble() / 2);
-                leftPIDF.setGoal(left.getCurrentPosition());
-                rightPIDF.setGoal(right.getCurrentPosition());
+            if (Math.abs(power.getAsDouble()) > 0.01) {
+                left.set(power.getAsDouble() * 2);
+                right.set(power.getAsDouble() * 2);
+                // m_PIDFController.setGoal(left.getCurrentPosition());
+            } else {
+                left.set(0);
+                right.set(0);
             }
         }, this);
     }
 
     @Override
     public void periodic() {
-        double output_left = leftPIDF.calculate(left.getCurrentPosition());
-        double output_right = rightPIDF.calculate(right.getCurrentPosition());
-        left.set(output_left);
+        double output = m_PIDFController.calculate(left.getCurrentPosition());
+        left.set(output);
 //        Log.d("asd", "output left: "+ output_left);
-        right.set(output_right);
+        right.set(output);
     }
 
     public void setVelocityAccel(double maxVelocity, double maxAcceleration){
-        leftPIDF = new ProfiledPIDFController(kP, kI, kD, kF,
-                new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration), TICKS_IN_DEGREES);
-        rightPIDF = new ProfiledPIDFController(kP, kI, kD, kF,
+        m_PIDFController = new ProfiledPIDFController(kP, kI, kD, kF,
                 new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration), TICKS_IN_DEGREES);
     }
 }

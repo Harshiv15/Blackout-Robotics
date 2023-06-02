@@ -7,6 +7,7 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.RIGHT_TRIGGER;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.RunCommand;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.powerplayutil.Height;
@@ -54,16 +55,6 @@ public class BlackoutTeleop extends BaseOpMode{
         gb1(START).toggleWhenPressed(
                 drive.fieldCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX, imu::getAbsoluteHeading),
                 drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX)
-        );
-
-        gb2(Y).whenActive(
-                new InstantCommand(()->elev.goTo(Height.LOW))
-        );
-        gb2(X).whenActive(
-                new InstantCommand(()->elev.goTo(Height.LOW))
-        );
-        gb2(A).whenActive(
-                new InstantCommand(()->elev.goTo(Height.LOW))
         );
 
         register(drive, elev);

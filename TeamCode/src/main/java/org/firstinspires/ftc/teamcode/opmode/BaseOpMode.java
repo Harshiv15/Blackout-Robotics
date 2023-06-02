@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
@@ -8,6 +10,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.RevIMU;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -45,8 +48,6 @@ public class BaseOpMode extends CommandOpMode {
 
     protected DigitalChannel[][] indicators = new DigitalChannel[8][2];
 
-    //protected SampleMecanumDrive rrDrive;
-
     @Override
     public void initialize() {
         gamepadEx1 = new GamepadEx(gamepad1);
@@ -71,6 +72,10 @@ public class BaseOpMode extends CommandOpMode {
         triggerGamepadEx2 = new TriggerGamepadEx(gamepad2, gamepadEx2);
 
         elev = new ElevatorSubsystem(elevLeft, elevRight);
+
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        tad("Mode", "Done initializing");
+        telemetry.update();
     }
     protected void initHardware() {
         try {
@@ -98,11 +103,8 @@ public class BaseOpMode extends CommandOpMode {
             red7 = hardwareMap.get(DigitalChannel.class, "red7");
             green7 = hardwareMap.get(DigitalChannel.class, "green7");
 
-            /*for(int row = 0; row < indicators.length; row++) {
-                for(int color = 0; color < 2; color++) {
-                    indicators[row][color] = hardwareMap.get(DigitalChannel.class, color == 0 ? "green" : "red" + row);
-                }
-            }*/
+            elevLeft.resetEncoder();
+            elevRight.resetEncoder();
         }
         catch(Exception e) {
             tad("ERROR", "Motor init failed");
@@ -112,10 +114,6 @@ public class BaseOpMode extends CommandOpMode {
     protected void setupHardware() {
         fL.setInverted(true);
         bL.setInverted(true);
-        elevLeft.setInverted(true);
-
-        elevLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         red0.setMode(DigitalChannel.Mode.OUTPUT);
         green0.setMode(DigitalChannel.Mode.OUTPUT);
@@ -137,11 +135,11 @@ public class BaseOpMode extends CommandOpMode {
         elevLeft.resetEncoder();
         elevRight.resetEncoder();
 
-        /*for(DigitalChannel[] row : indicators) {
-            for(DigitalChannel led : row) {
-                led.setMode(DigitalChannel.Mode.OUTPUT);
-            }
-        }*/
+        // * using encoder???
+        elevLeft.setRunMode(Motor.RunMode.RawPower);
+        elevRight.setRunMode(Motor.RunMode.RawPower);
+        elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
     }
 
 
@@ -153,18 +151,23 @@ public class BaseOpMode extends CommandOpMode {
 
     public void setLEDColors(int colorId) {
         boolean red, green;
-        if (colorId == 1) {
-            red = false;
-            green = true;
-        } else if (colorId == 2) {
-            red = true;
-            green = false;
-        } else if (colorId == 3) {
-            red = false;
-            green = false;
-        } else {
-            red = true;
-            green = true;
+        switch (colorId) {
+            case 1:
+                red = false;
+                green = true;
+                break;
+            case 2:
+                red = true;
+                green = false;
+                break;
+            case 3:
+                red = false;
+                green = false;
+                break;
+            default:
+                red = true;
+                green = true;
+                break;
         }
 
         red0.setState(red);
@@ -183,12 +186,6 @@ public class BaseOpMode extends CommandOpMode {
         green5.setState(green);
         green6.setState(green);
         green7.setState(green);
-
-        /*for(DigitalChannel[] row : indicators) {
-            for(int i = 0; i < row.length; i++) {
-                row[i].setState(i % 0 == 0 ? red : green);
-            }
-        }*/
     }
 
     private static double round(double value) {

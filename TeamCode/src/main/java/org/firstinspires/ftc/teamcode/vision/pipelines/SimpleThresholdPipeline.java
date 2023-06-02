@@ -6,7 +6,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-public class JunctionObserverPipeline extends OpenCvPipeline {
+public class SimpleThresholdPipeline extends OpenCvPipeline {
 
     /*
      * These are our variables that will be
