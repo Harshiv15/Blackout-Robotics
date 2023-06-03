@@ -14,12 +14,14 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.powerplayutil.Height;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.ElevatorSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.util.GamepadTrigger;
 import org.firstinspires.ftc.teamcode.util.TriggerGamepadEx;
 import org.firstinspires.ftc.teamcode.vision.pipelines.JunctionObserverPipeline;
+import org.firstinspires.ftc.teamcode.vision.pipelines.JunctionWithArea;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
@@ -30,7 +32,7 @@ public class BaseOpMode extends CommandOpMode {
     protected MotorEx fL, fR, bL, bR, elevLeft, elevRight;
     protected MecanumDriveSubsystem drive;
     protected SampleMecanumDrive rrDrive;
-    protected JunctionObserverPipeline pipeline;
+    protected JunctionWithArea pipeline;
     protected OpenCvCamera camera;
     protected ElevatorSubsystem elev;
     /*protected ElevatorSubsystem elev;
@@ -57,7 +59,7 @@ public class BaseOpMode extends CommandOpMode {
         setupHardware();
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-        pipeline = new JunctionObserverPipeline();
+        pipeline = new JunctionWithArea();
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName);
         camera.setPipeline(pipeline);
 
@@ -140,6 +142,13 @@ public class BaseOpMode extends CommandOpMode {
         elevRight.setRunMode(Motor.RunMode.RawPower);
         elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+    }
+    @Override
+    public void run() {
+        super.run();
+        tad("Target pos", elev.getCurrentGoal());
+        tad("Current pos (average)", (elevLeft.getCurrentPosition() + elevRight.getCurrentPosition()/2));
+        telemetry.update();
     }
 
 

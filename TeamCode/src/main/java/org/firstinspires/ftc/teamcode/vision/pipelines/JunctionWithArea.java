@@ -8,8 +8,8 @@ import java.util.ArrayList;
 public class JunctionWithArea extends OpenCvPipeline {
     private Rect rect = null;
     private Rect ratioCheck;
-    private final Scalar lowThresh = new Scalar(0, 50, 10);
-    private final Scalar highThresh = new Scalar(255, 180, 95);
+    private final Scalar lowThresh = new Scalar(0, 50, 10); // 0, 50, 10
+    private final Scalar highThresh = new Scalar(255, 180, 95); // 255, 180, 95
     private final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(1, 25));
     private final ArrayList<MatOfPoint> contours = new ArrayList<>();
 
@@ -34,7 +34,7 @@ public class JunctionWithArea extends OpenCvPipeline {
             double area = Imgproc.contourArea(contour);
             ratioCheck = Imgproc.boundingRect(contour);
 
-            if(ratioCheck.height / ratioCheck.width >= 1 && area > largestArea) {
+            if(ratioCheck.height / ratioCheck.width >= 3 && area > largestArea) {
                 biggestContour = contour;
                 largestArea = area;
             }

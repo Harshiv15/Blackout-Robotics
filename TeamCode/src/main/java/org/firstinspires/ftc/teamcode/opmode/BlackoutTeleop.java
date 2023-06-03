@@ -57,6 +57,8 @@ public class BlackoutTeleop extends BaseOpMode{
                 drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX)
         );
 
+        gb2(DPAD_UP).whileActiveOnce(elev.goTo(Height.LOW));
+
         register(drive, elev);
         drive.setDefaultCommand(drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
         elev.setDefaultCommand(elev.setPower(gamepadEx2::getLeftY));

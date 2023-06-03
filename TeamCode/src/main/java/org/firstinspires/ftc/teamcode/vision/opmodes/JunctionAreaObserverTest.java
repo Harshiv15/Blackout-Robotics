@@ -1,8 +1,7 @@
 package org.firstinspires.ftc.teamcode.vision.opmodes;
 
-import android.util.Log;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -12,51 +11,51 @@ import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvWebcam;
 
 @TeleOp
-public class JunctionAreaObserverTest extends OpMode {
+public class JunctionAreaObserverTest extends LinearOpMode {
     private OpenCvCamera camera;
     private JunctionWithArea pipeline;
     private double pix_to_degree = 0.192;
     ElapsedTime time = new ElapsedTime();
 
     @Override
-    public void init() {
+    public void runOpMode() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         pipeline = new JunctionWithArea();
         camera.setPipeline(pipeline);
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
-            public void onOpened()
-            {
-                camera.startStreaming(640 , 360, OpenCvCameraRotation.UPRIGHT);
+            public void onOpened() {
+                camera.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
+
             @Override
-            public void onError(int errorCode) {}
+            public void onError(int errorCode) {
+            }
         });
+        telemetry.setMsTransmissionInterval(50);
         time.reset();
-    }
 
-    @Override
-    public void loop() {
-        Rect rect;
-        if ((rect = pipeline.getRect()) != null) {
-            double x = rect.x + ((double) rect.width / 2);
-            telemetry.addData("center", x);
-            telemetry.addData("error", (x - 160));
-            telemetry.addData("change", change(rect));
+        while (!isStarted() && !isStopRequested()) {
+            Rect rect;
+            if ((rect = pipeline.getRect()) != null) {
+                double x = rect.x + ((double) rect.width / 2);
+                telemetry.addData("center", x);
+                telemetry.addData("error", (x - 320));
+                telemetry.addData("change", change(rect));
 
-        } else {
-            telemetry.addData("nothing seen", true);
+            } else {
+                telemetry.addData("nothing seen", true);
+            }
+            telemetry.update();
         }
-        telemetry.update();
     }
-    public double change(Rect rect){
-        double junctionX = rect.x+(double) rect.width/2;
-        return ((junctionX-160)*pix_to_degree);
+
+    public double change (Rect rect){
+        double junctionX = rect.x + (double) rect.width / 2;
+        return ((junctionX - 320) * pix_to_degree);
     }
 }

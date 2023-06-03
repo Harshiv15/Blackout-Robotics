@@ -40,5 +40,5 @@ dependencies {
     implementation 'org.openftc:apriltag:1.1.1'
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7'
-    implementation 'com.github.deltacv:EOCV-Sim:3.3.2'
+//    implementation 'com.github.deltacv:EOCV-Sim:3.3.2'
 }

@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.InstantCommand;
@@ -19,14 +22,14 @@ import java.util.function.DoubleSupplier;
 public class ElevatorSubsystem extends SubsystemBase {
     private final MotorEx left, right;
 
-    private final double TICKS_IN_DEGREES = (9 * 28.0) / 360;
+    private final double TICKS_IN_DEGREES = 28.0*12;
 
-    public static double kP = 0; //0.0016
+    public static double kP = 0.5; //0.0016
     public static double kI = 0; //0.06
     public static double kD = 0; //0.00018
     public static double kF = 0; //0.06
-    public static double maxVelocity = 30;
-    public static double maxAcceleration = 30;
+    public static double maxVelocity = 3000;
+    public static double maxAcceleration = 3000;
     private ProfiledPIDFController m_PIDFController = new ProfiledPIDFController(kP, kI, kD, kF,
             new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration), TICKS_IN_DEGREES);
     public static double tolerance = 10;
@@ -43,7 +46,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         left.setInverted(true);
 
         m_PIDFController.setTolerance(tolerance);
-        m_PIDFController.setGoal(0);
+        // m_PIDFController.setGoal(0);
     }
 
     private void setHeight(Height height) {
