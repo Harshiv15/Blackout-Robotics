@@ -22,9 +22,9 @@ import java.util.function.DoubleSupplier;
 public class ElevatorSubsystem extends SubsystemBase {
     private final MotorEx left, right;
 
-    private final double TICKS_IN_DEGREES = 28.0*12;
+    private final double TICKS_IN_DEGREES = (28*12)/360.0;
 
-    public static double kP = 0.5; //0.0016
+    public static double kP = 0.0075;
     public static double kI = 0; //0.06
     public static double kD = 0; //0.00018
     public static double kF = 0; //0.06
@@ -73,13 +73,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command goTo(Height height) {
-        return new InstantCommand(() -> setHeight(height))
-                .andThen(new WaitUntilCommand(this::atTarget));
+        return new InstantCommand(() -> setHeight(height));
+                //.andThen(new WaitUntilCommand(this::atTarget));
     }
 
     public Command goTo(int tick) {
-        return new InstantCommand(() -> setHeight(tick))
-                .andThen(new WaitUntilCommand(this::atTarget));
+        return new InstantCommand(() -> setHeight(tick));
+                //.andThen(new WaitUntilCommand(this::atTarget));
     }
 
     public Command setPower(DoubleSupplier power) {

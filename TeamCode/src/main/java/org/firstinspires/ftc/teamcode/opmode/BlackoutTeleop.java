@@ -48,6 +48,7 @@ public class BlackoutTeleop extends BaseOpMode{
 
         cv.observeStick();
 
+        elev.goTo(Height.HIGH);
 
         gb1(LEFT_BUMPER).whileHeld(
                 drive.slowMode(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
@@ -57,7 +58,10 @@ public class BlackoutTeleop extends BaseOpMode{
                 drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX)
         );
 
-        gb2(DPAD_UP).whileActiveOnce(elev.goTo(Height.LOW));
+        gb2(Y).whenActive(elev.goTo(Height.HIGH));
+        gb2(B).whenActive(elev.goTo(Height.MEDIUM));
+        gb2(X).whenActive(elev.goTo(Height.LOW));
+        gb2(A).whenActive(elev.goTo(Height.GROUND));
 
         register(drive, elev);
         drive.setDefaultCommand(drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
