@@ -32,7 +32,7 @@ public class MecanumDriveSubsystem extends SubsystemBase {
 
     public static int joystickTransformFactor = 30;
 
-    public static double slowFactor = 3;
+    public static double slowFactor = 2;
 
     private double target;
 

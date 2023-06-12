@@ -112,20 +112,11 @@ public class MeepMeepTesting {
                     }
                 })
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(36, 62, Math.toRadians(-90)))
-                                .lineToLinearHeading(new Pose2d(33.00, 6, Math.toRadians(35.00)))
-                                .lineToLinearHeading(new Pose2d(57.50, 12, Math.toRadians(0.00)))
-                                .lineToLinearHeading(new Pose2d(33.00, 6, Math.toRadians(35.00)))
-                                .lineToLinearHeading(new Pose2d(57.50, 12, Math.toRadians(0.00)))
-                                .lineToLinearHeading(new Pose2d(33.00, 6, Math.toRadians(35.00)))
-                                .lineToLinearHeading(new Pose2d(57.50, 12, Math.toRadians(0.00)))
-                                .lineToLinearHeading(new Pose2d(33.00, 6, Math.toRadians(35.00)))
-                                .lineToLinearHeading(new Pose2d(57.50, 12, Math.toRadians(0.00)))
-                                .lineToLinearHeading(new Pose2d(33.00, 6, Math.toRadians(35.00)))
-                                .lineToLinearHeading(new Pose2d(57.50, 12, Math.toRadians(0.00)))
-                                .lineToLinearHeading(new Pose2d(33.00, 6, Math.toRadians(35.00)))
-                                .lineToLinearHeading(new Pose2d(36.00, 36.00, Math.toRadians(90.00)))
-                                .lineToLinearHeading(new Pose2d(59.5, 36, Math.toRadians(-180)))
+                        drive.trajectorySequenceBuilder(new Pose2d(36, 70, Math.toRadians(-90)))
+                                .splineToLinearHeading(new Pose2d(30, 27, Math.toRadians(215)), Math.toRadians(215))
+                                .back(5)
+                                .lineTo(new Vector2d(35, 22))
+                                .splineToSplineHeading(new Pose2d(57.5, 11.5, Math.toRadians(0)), Math.toRadians(0))
                                 .build()
                 );
 

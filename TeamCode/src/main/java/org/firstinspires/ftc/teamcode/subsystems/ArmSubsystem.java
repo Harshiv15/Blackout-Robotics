@@ -1,30 +1,39 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.arcrobotics.ftclib.hardware.ServoEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 // Subsystem for differential arm
 
+@Config
 public class ArmSubsystem extends SubsystemBase {
-    private final DcMotorEx leftArmMotor, rightArmMotor;
+    private final Servo leftArm, rightArm;
 
-    public static int frontVal = 50;
-    public static int backVal = 50;
+    public static int frontVal = 1;
+    public static int backVal = -1;
 
-    public ArmSubsystem(DcMotorEx leftArmMotor, DcMotorEx rightArmMotor) {
-        this.leftArmMotor = leftArmMotor;
-        this.rightArmMotor = rightArmMotor;
+    public ArmSubsystem(Servo leftArm, Servo rightArm) {
+        this.leftArm = leftArm;
+        this.rightArm = rightArm;
+        leftArm.setDirection(Servo.Direction.REVERSE);
     }
 
-    // only need to move one motor in auto
     public Command front() {
-        return new InstantCommand(()-> leftArmMotor.setTargetPosition(frontVal));
+        return new InstantCommand(()-> {
+            leftArm.setPosition(frontVal);
+            rightArm.setPosition(frontVal);
+        }, this);
     }
 
     public Command back() {
-        return new InstantCommand(()-> leftArmMotor.setTargetPosition(backVal));
+        return new InstantCommand(()-> {
+            leftArm.setPosition(backVal);
+            rightArm.setPosition(backVal);
+        }, this);
     }
 
     // use this for teleop!!

@@ -6,6 +6,7 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.LEFT_TRIGGER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.RIGHT_TRIGGER;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.FunctionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.RunCommand;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -20,13 +21,12 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 @TeleOp
 public class BlackoutTeleop extends BaseOpMode{
     private int ledState;
+    private double deadzone = 0.01;
+    private boolean driveDeadzoned, elevDeadzoned, armDeadzoned;
 
     @Override
     public void initialize() {
         super.initialize();
-
-        CVMaster cv = new CVMaster(this);
-        cv.observeStick();
 
         /*camera.setPipeline(pipeline);
 
@@ -45,17 +45,25 @@ public class BlackoutTeleop extends BaseOpMode{
             e.printStackTrace();
         }*/
 
-
-        cv.observeStick();
-
-        elev.goTo(Height.HIGH);
-
         gb1(LEFT_BUMPER).whileHeld(
                 drive.slowMode(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
 
         gb1(START).toggleWhenPressed(
-                drive.fieldCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX, imu::getAbsoluteHeading),
+                drive.fieldCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX, imu::getHeading),
                 drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX)
+        );
+
+        gb2(LEFT_BUMPER).whenActive(
+                claw.grab().andThen(arm.back())
+        );
+
+        gb2(RIGHT_BUMPER).whenActive(
+                claw.grab().andThen(arm.front())
+        );
+
+        gb2(DPAD_RIGHT).toggleWhenPressed(
+                claw.grab(),
+                claw.release()
         );
 
         gb2(Y).whenActive(elev.goTo(Height.HIGH));
@@ -63,7 +71,7 @@ public class BlackoutTeleop extends BaseOpMode{
         gb2(X).whenActive(elev.goTo(Height.LOW));
         gb2(A).whenActive(elev.goTo(Height.GROUND));
 
-        register(drive, elev);
+        register(drive, elev, claw, arm);
         drive.setDefaultCommand(drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
         elev.setDefaultCommand(elev.setPower(gamepadEx2::getLeftY));
     }
@@ -71,11 +79,12 @@ public class BlackoutTeleop extends BaseOpMode{
     @Override
     public void run() {
         super.run();
-        tad("leDEEZ NUTS", ledState % 4);
+        // tad("leDEEZ NUTS", ledState % 4);
 
         setLEDColors(ledState % 4);
         // Pronounced "headin-BRUH", obviously
-        tad("headinburgh", imu.getHeading());
+        // tad("headinburgh", imu.getHeading());
+
         telemetry.update();
     }
 }

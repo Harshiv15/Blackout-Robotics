@@ -8,19 +8,23 @@ import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.RevIMU;
+import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 
+import org.checkerframework.checker.units.qual.A;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.powerplayutil.Height;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.ArmSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ElevatorSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.ClawSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.util.GamepadTrigger;
 import org.firstinspires.ftc.teamcode.util.TriggerGamepadEx;
-import org.firstinspires.ftc.teamcode.vision.pipelines.JunctionObserverPipeline;
 import org.firstinspires.ftc.teamcode.vision.pipelines.JunctionWithArea;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -30,13 +34,17 @@ import java.math.RoundingMode;
 
 public class BaseOpMode extends CommandOpMode {
     protected MotorEx fL, fR, bL, bR, elevLeft, elevRight;
+    // * for resetting encoders bc MotorEx sux
+    protected DcMotorEx elevLeftDC, elevRightDC;
+    protected Servo armLeft, armRight;
+    protected Servo clawLeft, clawRight;
     protected MecanumDriveSubsystem drive;
     protected SampleMecanumDrive rrDrive;
     protected JunctionWithArea pipeline;
     protected OpenCvCamera camera;
     protected ElevatorSubsystem elev;
-    /*protected ElevatorSubsystem elev;
-    protected IntakeSubsystem intake;*/
+    protected ClawSubsystem claw;
+    protected ArmSubsystem arm;
 
     protected GamepadEx gamepadEx1;
     protected GamepadEx gamepadEx2;
@@ -74,6 +82,8 @@ public class BaseOpMode extends CommandOpMode {
         triggerGamepadEx2 = new TriggerGamepadEx(gamepad2, gamepadEx2);
 
         elev = new ElevatorSubsystem(elevLeft, elevRight);
+        arm = new ArmSubsystem(armLeft, armRight);
+        claw = new ClawSubsystem(clawLeft, clawRight);
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         tad("Mode", "Done initializing");
@@ -87,6 +97,12 @@ public class BaseOpMode extends CommandOpMode {
             bR = new MotorEx(hardwareMap, "backRight");
             elevLeft = new MotorEx(hardwareMap, "leftElevMotor");
             elevRight = new MotorEx(hardwareMap, "rightElevMotor");
+            elevLeftDC = hardwareMap.get(DcMotorEx.class, "leftElevMotor");
+            elevRightDC = hardwareMap.get(DcMotorEx.class, "rightElevMotor");
+            armLeft = hardwareMap.get(Servo.class, "armLeft");
+            armRight = hardwareMap.get(Servo.class, "armRight");
+            clawLeft = hardwareMap.get(Servo.class, "clawLeft");
+            clawRight = hardwareMap.get(Servo.class, "clawRight");
 
             red0 = hardwareMap.get(DigitalChannel.class, "red0");
             green0 = hardwareMap.get(DigitalChannel.class, "green0");
@@ -134,6 +150,10 @@ public class BaseOpMode extends CommandOpMode {
         red7.setMode(DigitalChannel.Mode.OUTPUT);
         green7.setMode(DigitalChannel.Mode.OUTPUT);
 
+        elevLeftDC.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elevRightDC.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elevLeftDC.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        elevRightDC.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         elevLeft.resetEncoder();
         elevRight.resetEncoder();
 
