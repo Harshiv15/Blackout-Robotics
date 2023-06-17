@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.arcrobotics.ftclib.command.CommandBase;
 
 import org.firstinspires.ftc.teamcode.roadrunner.drive.SampleMecanumDrive;
@@ -15,9 +16,8 @@ public class FollowLeftStackTrajectory extends CommandBase {
     @Override
     public void initialize() {
         drive.followTrajectorySequenceAsync(drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                .setReversed(true)
-                .splineToSplineHeading(new Pose2d(57.5, 11.5, Math.toRadians(0)), Math.toRadians(0))
-                //.lineToLinearHeading(new Pose2d(57.5, 12.5, 0))
+                .forward(1)
+                .splineTo(new Vector2d(-59, -12), Math.toRadians(180))
                 .build()
         );
     }

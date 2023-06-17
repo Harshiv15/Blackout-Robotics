@@ -6,13 +6,14 @@ public enum Height {
     GROUND(20),
     LOW(530),
     MEDIUM(1000),
-    HIGH(1440),
+    HIGH(1620),
     // cone stack
     // TODO: tune cone stack heights
-    FIRST(-142),
-    SECOND(-121),
-    THIRD(-87),
-    FOURTH(-60);
+    FIRST(142),
+    SECOND(121),
+    THIRD(87),
+    FOURTH(60),
+    FIFTH(40);
 
     // height in encoder ticks
     private final int height;

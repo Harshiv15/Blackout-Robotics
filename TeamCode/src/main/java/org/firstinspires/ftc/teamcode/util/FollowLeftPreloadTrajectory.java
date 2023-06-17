@@ -16,9 +16,10 @@ public class FollowLeftPreloadTrajectory extends CommandBase {
     @Override
     public void initialize() {
         drive.followTrajectorySequenceAsync(drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                //.lineToLinearHeading(new Pose2d(33.00, 6, Math.toRadians(35.00)))
-                .splineToLinearHeading(new Pose2d(36, 19, Math.toRadians(-90)), Math.toRadians(-90))
-                .splineTo(new Vector2d(28, 18), Math.toRadians(125))
+                //.lineToLinearHeading(new Pose2d(-31.5, 0, Math.toRadians(215.00)))
+
+                //.lineToLinearHeading(new Pose2d(-35, -33, Math.toRadians(-90)))
+                .splineToSplineHeading(new Pose2d(-25.5, -1.5, Math.toRadians(215)), Math.toRadians(60))
                 .build()
         );
     }

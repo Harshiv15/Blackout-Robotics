@@ -24,8 +24,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     public static double kI = 0; //0.06
     public static double kD = 0; //0.00018
     public static double kF = 0; //0.06
-    public static double maxVelocity = 600;
-    public static double maxAcceleration = 600;
+    public static double maxVelocity = 6000;
+    public static double maxAcceleration = 6000;
     private ProfiledPIDFController leftPIDF = new ProfiledPIDFController(kP, kI, kD, kF,
             new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration), TICKS_IN_DEGREES);
     private ProfiledPIDFController rightPIDF = new ProfiledPIDFController(kP, kI, kD, kF,
@@ -73,12 +73,12 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command goTo(Height height) {
-        return new InstantCommand(()-> setHeight(height))
+        return new InstantCommand(()-> setHeight(height), this)
                 .andThen(new WaitUntilCommand(this::atTarget));
     }
 
     public Command goTo(int tick) {
-        return new InstantCommand(() -> setHeight(tick))
+        return new InstantCommand(() -> setHeight(tick), this)
                 .andThen(new WaitUntilCommand(this::atTarget));
     }
 

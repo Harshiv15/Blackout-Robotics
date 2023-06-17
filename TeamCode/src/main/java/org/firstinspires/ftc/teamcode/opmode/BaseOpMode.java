@@ -11,6 +11,7 @@ import com.arcrobotics.ftclib.hardware.RevIMU;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -76,7 +77,7 @@ public class BaseOpMode extends CommandOpMode {
 
         drive = new MecanumDriveSubsystem(fL, fR, bL, bR, imu);
         rrDrive = new SampleMecanumDrive(hardwareMap);
-        rrDrive.setPoseEstimate(new Pose2d(36, 60, Math.toRadians(-90)));
+        rrDrive.setPoseEstimate(new Pose2d(-36, -63, Math.toRadians(-90)));
 
         triggerGamepadEx1 = new TriggerGamepadEx(gamepad1, gamepadEx1);
         triggerGamepadEx2 = new TriggerGamepadEx(gamepad2, gamepadEx2);
@@ -120,9 +121,6 @@ public class BaseOpMode extends CommandOpMode {
             green6 = hardwareMap.get(DigitalChannel.class, "green6");
             red7 = hardwareMap.get(DigitalChannel.class, "red7");
             green7 = hardwareMap.get(DigitalChannel.class, "green7");
-
-            elevLeft.resetEncoder();
-            elevRight.resetEncoder();
         }
         catch(Exception e) {
             tad("ERROR", "Motor init failed");
@@ -133,7 +131,7 @@ public class BaseOpMode extends CommandOpMode {
         fL.setInverted(true);
         bL.setInverted(true);
 
-        red0.setMode(DigitalChannel.Mode.OUTPUT);
+        /*red0.setMode(DigitalChannel.Mode.OUTPUT);
         green0.setMode(DigitalChannel.Mode.OUTPUT);
         red1.setMode(DigitalChannel.Mode.OUTPUT);
         green1.setMode(DigitalChannel.Mode.OUTPUT);
@@ -148,7 +146,7 @@ public class BaseOpMode extends CommandOpMode {
         red6.setMode(DigitalChannel.Mode.OUTPUT);
         green6.setMode(DigitalChannel.Mode.OUTPUT);
         red7.setMode(DigitalChannel.Mode.OUTPUT);
-        green7.setMode(DigitalChannel.Mode.OUTPUT);
+        green7.setMode(DigitalChannel.Mode.OUTPUT);*/
 
         elevLeftDC.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elevRightDC.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -166,8 +164,6 @@ public class BaseOpMode extends CommandOpMode {
     @Override
     public void run() {
         super.run();
-        tad("Target pos", elev.getCurrentGoal());
-        tad("Current pos (average)", (elevLeft.getCurrentPosition() + elevRight.getCurrentPosition()/2));
         telemetry.update();
     }
 

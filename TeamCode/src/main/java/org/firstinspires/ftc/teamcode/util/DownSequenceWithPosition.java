@@ -11,10 +11,10 @@ public class DownSequenceWithPosition extends SequentialCommandGroup {
     public DownSequenceWithPosition(ElevatorSubsystem elev, ArmSubsystem arm, ClawSubsystem claw, int height) {
         addCommands(
                 new ParallelCommandGroup(
-                        //arm.front(),
-                        new DelayedCommand(elev.goTo(height), 100),
-                        new DelayedCommand(claw.release(), 250)
-                )
+                        claw.grab().alongWith(new DelayedCommand(arm.front(), 100))
+                        //new DelayedCommand(elev.goTo(height), 100),
+                ),
+                new DelayedCommand(claw.release(), 100)
         );
 
         addRequirements(elev, arm, claw);

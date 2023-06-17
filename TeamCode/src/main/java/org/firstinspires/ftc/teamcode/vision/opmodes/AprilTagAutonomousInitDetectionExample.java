@@ -21,8 +21,12 @@
 
 package org.firstinspires.ftc.teamcode.vision.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.vision.pipelines.AprilTagDetectionPipeline;
@@ -33,7 +37,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@TeleOp
+@Autonomous
 public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 {
     OpenCvCamera camera;
@@ -53,9 +57,27 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     // UNITS ARE METERS
     double tagsize = 0.166;
 
-    int ID_TAG_OF_INTEREST = 18; // Tag ID 18 from the 36h11 family
+    // Tag ID 1,2,3 from the 36h11 family
+    int LEFT = 1;
+    int MIDDLE = 2;
+    int RIGHT = 3;
 
     AprilTagDetection tagOfInterest = null;
+
+    private IMU imu_IMU;
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
+    private Servo clawLeft;
+    private Servo clawRight;
+    private Servo armLeft;
+    private Servo armRight;
+    private DcMotor leftElevMotor;
+    private DcMotor rightElevMotor;
+
+    double power;
+    double elevSpeed;
 
     @Override
     public void runOpMode()
@@ -82,6 +104,33 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
         telemetry.setMsTransmissionInterval(50);
 
+        imu_IMU = hardwareMap.get(IMU.class, "imu");
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backRight");
+        clawLeft = hardwareMap.get(Servo.class, "clawLeft");
+        clawRight = hardwareMap.get(Servo.class, "clawRight");
+        armLeft = hardwareMap.get(Servo.class, "armLeft");
+        armRight = hardwareMap.get(Servo.class, "armRight");
+        leftElevMotor = hardwareMap.get(DcMotor.class, "leftElevMotor");
+        rightElevMotor = hardwareMap.get(DcMotor.class, "rightElevMotor");
+
+        // Put initialization blocks here.
+        power = 0.5;
+        elevSpeed = 0.7;
+        leftElevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightElevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftElevMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        armLeft.setDirection(Servo.Direction.REVERSE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        imu_IMU.resetYaw();
+
         /*
          * The INIT-loop:
          * This REPLACES waitForStart!
@@ -96,7 +145,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
                 for(AprilTagDetection tag : currentDetections)
                 {
-                    if(tag.id == ID_TAG_OF_INTEREST)
+                    if(tag.id == LEFT || tag.id == MIDDLE || tag.id == RIGHT)
                     {
                         tagOfInterest = tag;
                         tagFound = true;
@@ -164,37 +213,26 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         }
 
         /* Actually do something useful */
-        if(tagOfInterest == null)
-        {
-            /*
-             * Insert your autonomous code here, presumably running some default configuration
-             * since the tag was never sighted during INIT
-             */
-        }
-        else
-        {
-            /*
-             * Insert your autonomous code here, probably using the tag pose to decide your configuration.
-             */
 
-            // e.g.
-            if(tagOfInterest.pose.x <= 20)
-            {
-                // do something
-            }
-            else if(tagOfInterest.pose.x >= 20 && tagOfInterest.pose.x <= 50)
-            {
-                // do something else
-            }
-            else if(tagOfInterest.pose.x >= 50)
-            {
-                // do something else
-            }
+
+        preload();
+        // cycle();
+
+        if(tagOfInterest == null){
+            //default trajectory here if preferred
+        }else if(tagOfInterest.id == LEFT){
+            //left trajectory
+        }else if(tagOfInterest.id == MIDDLE){
+            //middle trajectory
+        }else{
+            //right trajectory
         }
 
 
         /* You wouldn't have this in your autonomous, this is just to prevent the sample from ending */
-        while (opModeIsActive()) {sleep(20);}
+        while (opModeIsActive()) {
+            sleep(20);
+        }
     }
 
     void tagToTelemetry(AprilTagDetection detection)
@@ -206,5 +244,168 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
         telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
+    }
+    /**
+     * Describe this function...
+     */
+    private void cycle() {
+        elevToEncTicks(-(1150 + 40));
+        armToPos(0.9);
+        turnCWWithRevs(-1.65);
+        sleep(1500);
+        forwardWithRevs(1.8);
+        sleep(1500);
+        grab();
+        sleep(250);
+        armToPos(0.5);
+        forwardWithRevs(-1);
+        sleep(500);
+        strafeRightToRevs(-0.4);
+        sleep(100);
+        forwardWithRevs(-2.5);
+        sleep(1000);
+        turnCWWithRevs(-1.65);
+        elevToEncTicks(1150 + 40);
+        sleep(1500);
+        armToPos(0.5);
+        armToPos(0.4);
+        forwardWithRevs(-0.8);
+        sleep(500);
+        elevToEncTicks(-600);
+        sleep(500);
+        deposit();
+        sleep(500);
+        forwardWithRevs(0.4);
+        armToPos(0.9);
+        elevToEncTicks(600);
+        sleep(750);
+        elevSpeed = 0.5;
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void deposit() {
+        release();
+        sleep(100);
+        grab();
+        sleep(100);
+    }
+
+    /**
+     * Scores the preload on the high pole closest to the cone stack
+     */
+    private void preload() {
+        grab();
+        sleep(1000);
+        forwardWithRevs(4.1);
+        elevToEncTicks(1440);
+        armToPos(0.6);
+        sleep(2500);
+        strafeRightToRevs(1.2);
+        sleep(1000);
+        forwardWithRevs(0.2);
+        sleep(500);
+        elevSpeed = 0.8;
+        elevToEncTicks(-600);
+        sleep(500);
+        release();
+        forwardWithRevs(-0.2);
+        elevToEncTicks(600);
+        armToPos(0.6);
+        sleep(750);
+        elevSpeed = 0.5;
+        forwardWithRevs(-0.4);
+        sleep(250);
+        strafeRightToRevs(-1.5);
+        sleep(1000);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void grab() {
+        clawLeft.setPosition(0.325);
+        clawRight.setPosition(0.275);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void armToPos(double pos) {
+        armLeft.setPosition(pos);
+        armRight.setPosition(pos);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void strafeRightToRevs(double revsStrafe) {
+        driveToEncTicks(revsStrafe * 560, -revsStrafe * 560, -revsStrafe * 560, revsStrafe * 560);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void elevToEncTicks(int ticksElev) {
+        leftElevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightElevMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftElevMotor.setPower(elevSpeed);
+        rightElevMotor.setPower(elevSpeed);
+        leftElevMotor.setTargetPosition(ticksElev);
+        rightElevMotor.setTargetPosition(ticksElev);
+        leftElevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightElevMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void release() {
+        clawLeft.setPosition(0.45);
+        clawRight.setPosition(0);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void driveToRevs(double revsFL, double revsFR, double revsBL, double revsBR) {
+        driveToEncTicks(revsFL * 560, revsFR * 560, revsBL * 560, revsBR * 560);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void driveToEncTicks(double ticksFL, double ticksFR, double ticksBL, double ticksBR) {
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeft.setPower(power);
+        frontRight.setPower(power);
+        backLeft.setPower(power);
+        backRight.setPower(power);
+        frontLeft.setTargetPosition((int) ticksFL);
+        frontRight.setTargetPosition((int) ticksFR);
+        backLeft.setTargetPosition((int) ticksBL);
+        backRight.setTargetPosition((int) ticksBR);
+        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void forwardWithRevs(double revsForward) {
+        driveToRevs(revsForward, revsForward, revsForward, revsForward);
+    }
+
+    /**
+     * Describe this function...
+     */
+    private void turnCWWithRevs(double revsTurn) {
+        driveToRevs(revsTurn, -revsTurn, revsTurn, -revsTurn);
     }
 }

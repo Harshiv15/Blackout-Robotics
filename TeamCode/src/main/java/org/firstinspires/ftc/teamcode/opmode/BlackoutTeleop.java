@@ -1,19 +1,23 @@
 package org.firstinspires.ftc.teamcode.opmode;
 
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.*;
-
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.LEFT_TRIGGER;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.A;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_RIGHT;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.START;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.RIGHT_TRIGGER;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
-import com.arcrobotics.ftclib.command.FunctionalCommand;
-import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.RunCommand;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.powerplayutil.Height;
-import org.firstinspires.ftc.teamcode.util.TurnCommand;
-import org.firstinspires.ftc.teamcode.vision.util.CVMaster;
+import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
+import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
@@ -23,12 +27,13 @@ public class BlackoutTeleop extends BaseOpMode{
     private int ledState;
     private double deadzone = 0.01;
     private boolean driveDeadzoned, elevDeadzoned, armDeadzoned;
+    Rect rect;
 
     @Override
     public void initialize() {
         super.initialize();
 
-        /*camera.setPipeline(pipeline);
+        camera.setPipeline(pipeline);
 
         try {
             camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -43,7 +48,7 @@ public class BlackoutTeleop extends BaseOpMode{
             });
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+        }
 
         gb1(LEFT_BUMPER).whileHeld(
                 drive.slowMode(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
@@ -51,6 +56,10 @@ public class BlackoutTeleop extends BaseOpMode{
         gb1(START).toggleWhenPressed(
                 drive.fieldCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX, imu::getHeading),
                 drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX)
+        );
+
+        gb1(RIGHT_TRIGGER).whileActiveContinuous(
+                drive.alignToPole(pipeline)
         );
 
         gb2(LEFT_BUMPER).whenActive(
@@ -79,11 +88,16 @@ public class BlackoutTeleop extends BaseOpMode{
     @Override
     public void run() {
         super.run();
-        // tad("leDEEZ NUTS", ledState % 4);
+        tad("leDEEZ NUTS", ledState % 4);
 
-        setLEDColors(ledState % 4);
+        // setLEDColors(ledState % 4);
         // Pronounced "headin-BRUH", obviously
-        // tad("headinburgh", imu.getHeading());
+        tad("headinburgh", imu.getHeading());
+        tad("target", drive.getTarget());
+        if(pipeline.getRect() != null)
+            tad("closest X",
+                    "" + Math.abs((rect = pipeline.getRect()).x + (rect = pipeline.getRect()).width/2 - 320)
+        );
 
         telemetry.update();
     }

@@ -20,18 +20,14 @@ public class CycleLeftHigh extends SequentialCommandGroup{
                         new FollowLeftStackTrajectory(drive)
                 ),
 
-                new DelayedCommand(claw.grab()/*.alongWith(new DelayedCommand(arm.back(), 800))*/,0),
+                new DelayedCommand(claw.grab().alongWith(new DelayedCommand(arm.back(), 800)),0),
 
-                new DelayedCommand(
-                new ParallelCommandGroup(
-                        new FollowLeftHighTrajectory(drive),
-                        elev.goTo(Height.HIGH)
-                ),
-                0),
+                new DelayedCommand(new FollowLeftHighTrajectory(drive), 0),
+                        //elev.goTo(Height.HIGH)
 
                 new DelayedCommand(claw.release(), 500),
                 new DelayedCommand(claw.grab(), 200),
-                //new DelayedCommand(arm.front(), 0),
+                new DelayedCommand(arm.front(), 0),
                 new WaitCommand(100)
         );
 
