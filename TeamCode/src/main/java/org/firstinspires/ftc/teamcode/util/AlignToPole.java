@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
 import static org.firstinspires.ftc.teamcode.roadrunner.drive.SampleMecanumDrive.HEADING_PID;
+import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.calculateDSq;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.arcrobotics.ftclib.command.CommandBase;
@@ -44,13 +45,13 @@ public class AlignToPole extends CommandBase {
 
     @Override
     public void execute() {
-        /*if((rect = pipeline.getRect()) != null) {
+        if((rect = pipeline.getRect()) != null) {
             updateTarget(rect);
             error = target - getYaw();
             change = controller.calculate(calculateDSq(error, time));
             time.reset();
             drive.driveWithMotorPowers(change,-change,-change,change);
-        }*/
+        }
     }
 
     @Override

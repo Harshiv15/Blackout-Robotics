@@ -6,9 +6,6 @@ import static org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem.pi
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.PerpetualCommand;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -26,7 +23,7 @@ public class AlignTesting extends BaseOpMode {
     public void initialize() {
         super.initialize();
 
-        camera.setPipeline(pipeline);
+        camera.setPipeline(junctionWithAreaPipeline);
 
         try {
             camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -45,8 +42,8 @@ public class AlignTesting extends BaseOpMode {
 
         gb1(RIGHT_TRIGGER).whenActive(
                 new InstantCommand(() -> {
-                    if(pipeline.getRect() != null && !rrDrive.isBusy()) {
-                        Rect rect = pipeline.getRect();
+                    if(junctionWithAreaPipeline.getRect() != null && !rrDrive.isBusy()) {
+                        Rect rect = junctionWithAreaPipeline.getRect();
                         double junctionX = rect.x + (double) rect.width / 2;
                         rrDrive.turn(Math.toRadians((-(junctionX - 320) * pix_to_degree) / (widthMulti * rect.width)));
                     }
@@ -56,8 +53,8 @@ public class AlignTesting extends BaseOpMode {
     @Override
     public void run() {
         super.run();
-        if(pipeline.getRect() != null)
-            tad("change", -((pipeline.getRect().x + pipeline.getRect().width/2 - 320) * pix_to_degree));
+        if(junctionWithAreaPipeline.getRect() != null)
+            tad("change", -((junctionWithAreaPipeline.getRect().x + junctionWithAreaPipeline.getRect().width/2 - 320) * pix_to_degree));
         telemetry.update();
     }
 }

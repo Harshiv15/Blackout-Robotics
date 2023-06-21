@@ -23,7 +23,6 @@ package org.firstinspires.ftc.teamcode.vision.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -49,13 +48,13 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C920 webcam at 800x448.
     // You will need to do your own calibration for other configurations!
-    double fx = 578.272;
-    double fy = 578.272;
-    double cx = 402.145;
-    double cy = 221.506;
+    public static double fx = 578.272;
+    public static double fy = 578.272;
+    public static double cx = 402.145;
+    public static double cy = 221.506;
 
     // UNITS ARE METERS
-    double tagsize = 0.166;
+    public static double tagsize = 0.166;
 
     // Tag ID 1,2,3 from the 36h11 family
     int LEFT = 1;
@@ -64,7 +63,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
     AprilTagDetection tagOfInterest = null;
 
-    private IMU imu_IMU;
+    private IMU imu;
     private DcMotor frontLeft;
     private DcMotor frontRight;
     private DcMotor backLeft;
@@ -104,7 +103,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
         telemetry.setMsTransmissionInterval(50);
 
-        imu_IMU = hardwareMap.get(IMU.class, "imu");
+        imu = hardwareMap.get(IMU.class, "imu");
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
@@ -129,7 +128,7 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        imu_IMU.resetYaw();
+        imu.resetYaw();
 
         /*
          * The INIT-loop:
@@ -214,10 +213,6 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
 
         /* Actually do something useful */
 
-
-        preload();
-        // cycle();
-
         if(tagOfInterest == null){
             //default trajectory here if preferred
         }else if(tagOfInterest.id == LEFT){
@@ -241,9 +236,6 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
         telemetry.addLine(String.format("Translation X: %.2f feet", detection.pose.x*FEET_PER_METER));
         telemetry.addLine(String.format("Translation Y: %.2f feet", detection.pose.y*FEET_PER_METER));
         telemetry.addLine(String.format("Translation Z: %.2f feet", detection.pose.z*FEET_PER_METER));
-        telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
-        telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
-        telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
     /**
      * Describe this function...

@@ -35,6 +35,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     public static int currentHeight = 0;
 
     public static int threshold = 30;
+    private boolean setpoints = true;
+    private double leftMotorPower, rightMotorPower;
 
     public ElevatorSubsystem(MotorEx left, MotorEx right) {
         this.left = left;
@@ -85,12 +87,29 @@ public class ElevatorSubsystem extends SubsystemBase {
     public Command setPower(DoubleSupplier power) {
         return new RunCommand(() -> {
             if (Math.abs(power.getAsDouble()) > 0.01) {
-                left.set(power.getAsDouble() * 2);
-                right.set(power.getAsDouble() * 2);
-                leftPIDF.setGoal(left.getCurrentPosition());
-                rightPIDF.setGoal(left.getCurrentPosition());
+                leftMotorPower = power.getAsDouble()*2;
+                rightMotorPower = power.getAsDouble()*2;
+                //leftPIDF.setGoal(left.getCurrentPosition());
+                //rightPIDF.setGoal(left.getCurrentPosition());
             }
         }, this);
+    }
+
+    public Command setPower(double power) {
+        return new RunCommand(() -> {
+           if(Math.abs(power) > 0.01) {
+               leftMotorPower = power*2;
+               rightMotorPower = power*2;
+           }
+        }, this);
+    }
+
+    public void startSetpoints() {
+        setpoints = true;
+    }
+
+    public void stopSetpoints() {
+        setpoints = false;
     }
 
     private void stop() {
@@ -106,11 +125,19 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        /*if(setpoints) {
             double outputL = leftPIDF.calculate(left.getCurrentPosition());
             double outputR = rightPIDF.calculate(right.getCurrentPosition());
             left.set(outputL);
             right.set(outputR);
-//        Log.d("asd", "output left: "+ output_left);
+        }
+        else {*/
+            double output_left = leftPIDF.calculate(left.getCurrentPosition());
+            double output_right = rightPIDF.calculate(right.getCurrentPosition());
+            left.set(output_left);
+            right.set(output_right);
+            super.periodic();
+        //}
 
     }
 

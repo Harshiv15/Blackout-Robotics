@@ -9,15 +9,15 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.RevIMU;
 import com.arcrobotics.ftclib.hardware.ServoEx;
+import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.ArmSubsystem;
@@ -26,22 +26,26 @@ import org.firstinspires.ftc.teamcode.subsystems.ClawSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.util.GamepadTrigger;
 import org.firstinspires.ftc.teamcode.util.TriggerGamepadEx;
+import org.firstinspires.ftc.teamcode.vision.pipelines.AprilTagDetectionPipeline;
 import org.firstinspires.ftc.teamcode.vision.pipelines.JunctionWithArea;
+import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 
 public class BaseOpMode extends CommandOpMode {
     protected MotorEx fL, fR, bL, bR, elevLeft, elevRight;
     // * for resetting encoders bc MotorEx sux
     protected DcMotorEx elevLeftDC, elevRightDC;
-    protected Servo armLeft, armRight;
+    protected SimpleServo armLeft, armRight;
     protected Servo clawLeft, clawRight;
     protected MecanumDriveSubsystem drive;
     protected SampleMecanumDrive rrDrive;
-    protected JunctionWithArea pipeline;
+    protected JunctionWithArea junctionWithAreaPipeline;
+    protected AprilTagDetectionPipeline aprilTagDetectionPipeline;
     protected OpenCvCamera camera;
     protected ElevatorSubsystem elev;
     protected ClawSubsystem claw;
@@ -59,8 +63,22 @@ public class BaseOpMode extends CommandOpMode {
 
     protected DigitalChannel[][] indicators = new DigitalChannel[8][2];
 
+    protected double fx = 578.272;
+    protected double fy = 578.272;
+    protected double cx = 402.145;
+    protected double cy = 221.506;
+
+    // UNITS ARE METERS
+    protected double tagsize = 0.166;
+    protected AprilTagDetection tagOfInterest = null;
+    public static int LEFT = 1, MIDDLE = 2, RIGHT = 3;
+    static final double FEET_PER_METER = 3.28084;
+
+
     @Override
     public void initialize() {
+        tad("Mode", "Starting initialization");
+        telemetry.update();
         gamepadEx1 = new GamepadEx(gamepad1);
         gamepadEx2 = new GamepadEx(gamepad2);
 
@@ -68,9 +86,11 @@ public class BaseOpMode extends CommandOpMode {
         setupHardware();
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
-        pipeline = new JunctionWithArea();
+        junctionWithAreaPipeline = new JunctionWithArea();
+        aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName);
-        camera.setPipeline(pipeline);
+        //camera.setPipeline(junctionWithAreaPipeline);
+        camera.setPipeline(aprilTagDetectionPipeline);
 
         imu = new RevIMU(hardwareMap);
         imu.init();
@@ -88,8 +108,63 @@ public class BaseOpMode extends CommandOpMode {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         tad("Mode", "Done initializing");
+
         telemetry.update();
     }
+
+    protected void detectSleeve() {
+
+        ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
+
+        if (currentDetections.size() != 0) {
+            boolean tagFound = false;
+
+            for (AprilTagDetection tag : currentDetections) {
+                if (tag.id == LEFT || tag.id == MIDDLE || tag.id == RIGHT) {
+                    tagOfInterest = tag;
+                    tagFound = true;
+                    break;
+                }
+            }
+
+            if (tagFound) {
+                tal("Tag of interest is in sight!\n\nLocation data:");
+                tagToTelemetry(tagOfInterest);
+            } else {
+                tal("Don't see tag of interest :(");
+
+                if (tagOfInterest == null) {
+                    tal("(The tag has never been seen)");
+                } else {
+                    tal("\nBut we HAVE seen the tag before; last seen at:");
+                    tagToTelemetry(tagOfInterest);
+                }
+            }
+
+        } else {
+            tal("Don't see tag of interest :(");
+
+            if (tagOfInterest == null) {
+                tal("(The tag has never been seen)");
+            } else {
+                tal("\nBut we HAVE seen the tag before; last seen at:");
+                tagToTelemetry(tagOfInterest);
+            }
+
+        }
+
+        sleep(20);
+        telemetry.update();
+    }
+
+    protected void tagToTelemetry(AprilTagDetection detection)
+    {
+        tal(String.format("\nDetected tag ID=%d", detection.id));
+        tal(String.format("Translation X: %.2f feet", detection.pose.x*FEET_PER_METER));
+        tal(String.format("Translation Y: %.2f feet", detection.pose.y*FEET_PER_METER));
+        tal(String.format("Translation Z: %.2f feet", detection.pose.z*FEET_PER_METER));
+    }
+
     protected void initHardware() {
         try {
             fL = new MotorEx(hardwareMap, "frontLeft");
@@ -100,8 +175,8 @@ public class BaseOpMode extends CommandOpMode {
             elevRight = new MotorEx(hardwareMap, "rightElevMotor");
             elevLeftDC = hardwareMap.get(DcMotorEx.class, "leftElevMotor");
             elevRightDC = hardwareMap.get(DcMotorEx.class, "rightElevMotor");
-            armLeft = hardwareMap.get(Servo.class, "armLeft");
-            armRight = hardwareMap.get(Servo.class, "armRight");
+            armLeft = new SimpleServo(hardwareMap, "armLeft", 0, 355);
+            armRight = new SimpleServo(hardwareMap, "armRight", 0, 355);
             clawLeft = hardwareMap.get(Servo.class, "clawLeft");
             clawRight = hardwareMap.get(Servo.class, "clawRight");
 
@@ -158,15 +233,9 @@ public class BaseOpMode extends CommandOpMode {
         // * using encoder???
         elevLeft.setRunMode(Motor.RunMode.RawPower);
         elevRight.setRunMode(Motor.RunMode.RawPower);
-        elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        elevLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         elevRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
     }
-    @Override
-    public void run() {
-        super.run();
-        telemetry.update();
-    }
-
 
     private static double round(double value, @SuppressWarnings("SameParameterValue") int places) {
         if (places < 0) throw new IllegalArgumentException();
@@ -240,5 +309,9 @@ public class BaseOpMode extends CommandOpMode {
     // telemetry add data = tad
     protected void tad(String caption, Object value) {
         telemetry.addData(caption, value);
+    }
+
+    protected void tal(String caption) {
+        telemetry.addLine(caption);
     }
 }

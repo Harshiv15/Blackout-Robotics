@@ -20,7 +20,7 @@ public class FollowLeftHighTrajectory extends CommandBase {
                 //.strafeLeft(10)
                 //.back(15)
                 .back(1)
-                .splineTo(new Vector2d(-25.5, -1.5), Math.toRadians(35))
+                .splineTo(new Vector2d(-27.5, -1.5), Math.toRadians(35))
                 .build()
         );
     }

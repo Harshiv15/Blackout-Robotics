@@ -3,25 +3,30 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.RunCommand;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import java.util.function.DoubleSupplier;
+
 // Subsystem for differential arm
 
 @Config
 public class ArmSubsystem extends SubsystemBase {
-    private final Servo leftArm, rightArm;
+    private final ServoEx leftArm, rightArm;
 
-    public static double frontVal = 1;
-    public static double backVal = 0.35;
+    // * can be tuned in dashboard
+    public static double frontVal = 0.7;
+    public static double backVal = 0;
+    public static double idleVal = 0.35;
 
-    public ArmSubsystem(Servo leftArm, Servo rightArm) {
+    public ArmSubsystem(ServoEx leftArm, ServoEx rightArm) {
         this.leftArm = leftArm;
         this.rightArm = rightArm;
-        leftArm.setDirection(Servo.Direction.REVERSE);
+        leftArm.setInverted(true);
     }
 
     public Command front() {
@@ -42,9 +47,18 @@ public class ArmSubsystem extends SubsystemBase {
         );
     }
 
-    // use this for teleop!!
-    public Command setAngles(double pitch, double roll) {
-        // @TODO - implement setAngles
-        return new InstantCommand();
+    public Command idle() {
+        return new InstantCommand(()-> {
+            leftArm.setPosition(idleVal);
+            rightArm.setPosition(idleVal);
+        }, this).andThen(
+                new WaitCommand(500)
+        );
+    }
+
+    public Command moveWrist(DoubleSupplier power) {
+        return new RunCommand(()->{
+
+        }, this);
     }
 }

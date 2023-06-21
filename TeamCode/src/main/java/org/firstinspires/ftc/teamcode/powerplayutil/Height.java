@@ -4,15 +4,15 @@ public enum Height {
     // junction
     NONE(0),
     GROUND(20),
-    LOW(530),
-    MEDIUM(1000),
-    HIGH(1620),
+    LOW(600),
+    MEDIUM(1140),
+    HIGH(1750),
     // cone stack
     // TODO: tune cone stack heights
-    FIRST(142),
-    SECOND(121),
-    THIRD(87),
-    FOURTH(60),
+    FIRST(280),
+    SECOND(220),
+    THIRD(160),
+    FOURTH(100),
     FIFTH(40);
 
     // height in encoder ticks

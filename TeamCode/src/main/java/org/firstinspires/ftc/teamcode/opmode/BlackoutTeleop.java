@@ -8,15 +8,15 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.START;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.LEFT_TRIGGER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.RIGHT_TRIGGER;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.powerplayutil.Height;
-import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
+import org.firstinspires.ftc.teamcode.util.DelayedCommand;
 import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -33,7 +33,7 @@ public class BlackoutTeleop extends BaseOpMode{
     public void initialize() {
         super.initialize();
 
-        camera.setPipeline(pipeline);
+        camera.setPipeline(junctionWithAreaPipeline);
 
         try {
             camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -51,7 +51,8 @@ public class BlackoutTeleop extends BaseOpMode{
         }
 
         gb1(LEFT_BUMPER).whileHeld(
-                drive.slowMode(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
+                drive.slowMode(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX)
+        );
 
         gb1(START).toggleWhenPressed(
                 drive.fieldCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX, imu::getHeading),
@@ -59,7 +60,11 @@ public class BlackoutTeleop extends BaseOpMode{
         );
 
         gb1(RIGHT_TRIGGER).whileActiveContinuous(
-                drive.alignToPole(pipeline)
+                drive.alignToPole(junctionWithAreaPipeline)
+        );
+
+        gb1(START).and(gb1(RIGHT_TRIGGER)).toggleWhenActive(
+                new InstantCommand(), true
         );
 
         gb2(LEFT_BUMPER).whenActive(
@@ -70,9 +75,25 @@ public class BlackoutTeleop extends BaseOpMode{
                 claw.grab().andThen(arm.front())
         );
 
+        gb2(LEFT_TRIGGER).or(gb2(RIGHT_TRIGGER)).whenActive(
+                new InstantCommand(elev::stopSetpoints)
+        );
+
+        gb2(Y).or(gb2(B)).or(gb2(X)).or(gb2(A)).whenActive(
+                new InstantCommand(elev::startSetpoints)
+        );
+
+        gb2(LEFT_TRIGGER).or(gb2(RIGHT_TRIGGER)).whileActiveContinuous(
+                elev.setPower(gamepadEx2.getTrigger(RIGHT_TRIGGER)-gamepadEx2.getTrigger(LEFT_TRIGGER))
+        );
+
         gb2(DPAD_RIGHT).toggleWhenPressed(
-                claw.grab(),
-                claw.release()
+                claw.grab().andThen(new DelayedCommand(arm.idle(), 500)),
+                arm.back().andThen(new DelayedCommand(claw.release(),100))
+                        .andThen(new DelayedCommand(claw.grab(), 50))
+                        .andThen(new DelayedCommand(arm.front(), 100))
+                        .andThen(claw.release())
+                        .andThen(elev.goTo(Height.NONE))
         );
 
         gb2(Y).whenActive(elev.goTo(Height.HIGH));
@@ -82,21 +103,22 @@ public class BlackoutTeleop extends BaseOpMode{
 
         register(drive, elev, claw, arm);
         drive.setDefaultCommand(drive.robotCentric(gamepadEx1::getLeftX, gamepadEx1::getLeftY, gamepadEx1::getRightX));
-        elev.setDefaultCommand(elev.setPower(gamepadEx2::getLeftY));
+        elev.setDefaultCommand(elev.setPower(gamepadEx2.getTrigger(RIGHT_TRIGGER)-gamepadEx2.getTrigger(LEFT_TRIGGER)));
     }
 
     @Override
     public void run() {
         super.run();
         tad("leDEEZ NUTS", ledState % 4);
+        rrDrive.update();
 
         // setLEDColors(ledState % 4);
         // Pronounced "headin-BRUH", obviously
         tad("headinburgh", imu.getHeading());
         tad("target", drive.getTarget());
-        if(pipeline.getRect() != null)
+        if(junctionWithAreaPipeline.getRect() != null)
             tad("closest X",
-                    "" + Math.abs((rect = pipeline.getRect()).x + (rect = pipeline.getRect()).width/2 - 320)
+                    "" + Math.abs((rect = junctionWithAreaPipeline.getRect()).x + (rect = junctionWithAreaPipeline.getRect()).width/2 - 320)
         );
 
         telemetry.update();

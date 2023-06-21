@@ -17,7 +17,7 @@ public class FollowLeftStackTrajectory extends CommandBase {
     public void initialize() {
         drive.followTrajectorySequenceAsync(drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                 .forward(1)
-                .splineTo(new Vector2d(-59, -11), Math.toRadians(180))
+                .splineTo(new Vector2d(-60 /*-62.5*/, -10 /*-9*/), Math.toRadians(180))
                 .build()
         );
     }
